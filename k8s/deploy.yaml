@@ -1,0 +1,24 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: hellozcp
+  labels:
+    app: hellozcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hellozcp
+  template:
+    metadata:
+      labels:
+        app: hellozcp
+    spec:
+      containers:
+      - name: hellozcp
+        image: earth1223/hellozcp:0.0.1
+        ports:
+        - containerPort: 8080
+        imagePullPolicy: Always
+  strategy:
+    type: RollingUpdate
