@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: hellozcp
-        image: earth1223/hellozcp:0.0.1
+        image: dev03/hellozcp:0.0.1
         ports:
         - containerPort: 8080
         imagePullPolicy: Always
