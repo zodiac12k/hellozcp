@@ -20,5 +20,7 @@ spec:
         ports:
         - containerPort: 8080
         imagePullPolicy: Always
+      imagePullSecrets:
+      - name: my-docker-secret
   strategy:
     type: RollingUpdate
