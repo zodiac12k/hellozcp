@@ -16,11 +16,11 @@ spec:
     spec:
       containers:
       - name: hellozcp
-        image: dev03/hellozcp:0.0.1
+        image: earth1223/hellozcp:latest
         ports:
         - containerPort: 8080
         imagePullPolicy: Always
       imagePullSecrets:
-      - name: my-docker-secret
+      - name: harbor-secret
   strategy:
     type: RollingUpdate
