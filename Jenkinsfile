@@ -41,9 +41,8 @@ podTemplate(label:label,
             container('kubectl') {
                 kubeCmd.apply file: 'k8s/service.yaml', namespace: K8S_NAMESPACE
                 yaml.update file: 'k8s/deploy.yaml', update: ['.spec.template.spec.containers[0].image': "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${VERSION}"]
-                kubeCmd.apply file: 'k8s/deploy.yaml', namespace: K8S_NAMESPACE
                 kubeCmd.scale file: 'k8s/deploy.yaml', replicas: '0', namespace: K8S_NAMESPACE
-                kubeCmd.scale file: 'k8s/deploy.yaml', replicas: 1, namespace: K8S_NAMESPACE
+                kubeCmd.apply file: 'k8s/deploy.yaml', namespace: K8S_NAMESPACE, wait: 300
             }
         }
     }
