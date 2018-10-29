@@ -48,7 +48,7 @@ podTemplate(label:label,
         }
         
         stage('TAGGING') {
-            gitCmd.tag 
+            gitCmd.tag tag: VERSION, credentialsId: 'GIT_CREDENTIALS'
         }
 
     }
