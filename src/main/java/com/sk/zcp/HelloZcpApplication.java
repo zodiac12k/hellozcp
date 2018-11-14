@@ -18,7 +18,7 @@ public class HelloZcpApplication {
 		return "Hello ZCP";
 	}
   
-  	@GetMapping("/error") 
+  	@GetMapping("/errorservice") 
 	public String error() throws Exception{
 		throw new Exception("Error service");
 	}
