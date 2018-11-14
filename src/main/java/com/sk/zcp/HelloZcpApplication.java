@@ -17,4 +17,10 @@ public class HelloZcpApplication {
 	public String home() {
 		return "Hello ZCP";
 	}
+  
+  	@GetMapping("/error") 
+	public String error() {
+		throw new Exception("Error service");
+	}
+  
 }
