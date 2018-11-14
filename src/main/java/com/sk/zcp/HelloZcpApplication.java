@@ -19,7 +19,7 @@ public class HelloZcpApplication {
 	}
   
   	@GetMapping("/error") 
-	public String error() {
+	public String error() throws Exception{
 		throw new Exception("Error service");
 	}
   
