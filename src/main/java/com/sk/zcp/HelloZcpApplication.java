@@ -84,6 +84,7 @@ public class HelloZcpApplication {
 	@GetMapping("/timeout") 
 	public String timeout(@RequestParam(defaultValue="60")String timeout) {
   		int intTimeoutMilSec = Integer.parseInt(timeout) * 1000;
+  		logger.info("TIMEOUT : " + timeout);
   		try {
 			Thread.currentThread().sleep(intTimeoutMilSec);
 		} catch (InterruptedException e) {
