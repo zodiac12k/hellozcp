@@ -33,7 +33,7 @@ spec:
         livenessProbe:
           failureThreshold: 10
           httpGet:
-            path: /timeout?timeout=2
+            path: /
             port: 8080
             scheme: HTTP
           initialDelaySeconds: 30
