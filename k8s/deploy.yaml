@@ -40,7 +40,14 @@ spec:
           periodSeconds: 10
           successThreshold: 1
           timeoutSeconds: 1
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: timezone
       imagePullSecrets:
       - name: harbor-secret
+      volumes:  
+      - name: timezone
+        hostPath:
+          path: /usr/share/zoneinfo/Asia/Seoul
   strategy:
     type: RollingUpdate
