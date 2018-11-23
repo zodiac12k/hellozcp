@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -111,4 +113,11 @@ public class HelloZcpApplication {
   		map.put("processTime", t2 - t1);
 		return map;
 	}
+
+  	@GetMapping("/time")
+  	public String getServerTime() {
+  		Date d = Calendar.getInstance().getTime();
+  		logger.debug(d.toString());
+		return d.toString();
+  	}
 }
