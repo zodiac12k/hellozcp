@@ -147,7 +147,7 @@ public class HelloZcpApplication {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		logger.info(sb.toString());
+		System.out.println(sb.toString());
   		return "Done. Check Log.";
   	}
   	
