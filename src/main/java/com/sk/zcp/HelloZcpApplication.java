@@ -1,9 +1,13 @@
 package com.sk.zcp;
 
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetSocketAddress;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -37,12 +41,14 @@ public class HelloZcpApplication {
 	
 	@GetMapping("/home") 
 	public String home() {
+		logger.info("--------- home start ----------");
 		return "Hello ZCP";
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@GetMapping("/info") 
 	public String info(@RequestHeader Map header, HttpServletRequest req) {
+		logger.info("--------- info start ----------");
 		StringBuffer sb = new StringBuffer();
 		sb.append("<b>HTTP HEADER</b><br/>");
 		header.forEach((key, value) -> {sb.append(String.format("%s : %s <br/>", key, value));});
@@ -62,6 +68,7 @@ public class HelloZcpApplication {
   
   	@GetMapping("/printErrorLog") 
 	public String error() throws Exception{
+  		logger.info("--------- printErrorLog start ----------");
   		Exception exception = new Exception("Error service");
   		StringWriter sw = new StringWriter();
   		BufferedWriter bw = new BufferedWriter(sw);
@@ -85,19 +92,24 @@ public class HelloZcpApplication {
   	@SuppressWarnings("static-access")
 	@GetMapping("/timeout") 
 	public String timeout(@RequestParam(defaultValue="60")String timeout) {
-  		int intTimeoutMilSec = Integer.parseInt(timeout) * 1000;
+  		logger.info("--------- timeout start ----------");
+  		int intTimeout = Integer.parseInt(timeout);
   		logger.info("TIMEOUT : " + timeout);
   		try {
-			Thread.currentThread().sleep(intTimeoutMilSec);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+	  		for (int i = 0 ; i < intTimeout ; i = i + 1) {
+  				Thread.currentThread().sleep(1000);
+  				logger.info("Waiting " + i);
+	  		}
+  		} catch (InterruptedException e) {
+  			e.printStackTrace();
+  		}
 		return "timeout " + timeout + " seconds";
 	}
   	
   	@SuppressWarnings({ "rawtypes", "unchecked" })
   	@GetMapping("/bigJson") 
 	public Map bigJson(@RequestParam(defaultValue="1000")String amount) {
+  		logger.info("--------- bigJson start ----------");
   		long t1 = System.nanoTime();
 		Map map = new HashMap();
 		map.put("dataAmount", amount);
@@ -116,8 +128,27 @@ public class HelloZcpApplication {
 
   	@GetMapping("/time")
   	public String getServerTime() {
+  		logger.info("--------- time start ----------");
   		Date d = Calendar.getInstance().getTime();
   		logger.debug(d.toString());
 		return d.toString();
   	}
+  	
+  	@GetMapping("/fileread")
+  	public String fileread(@RequestParam String filepath) {
+  		logger.info("--------- fileread start ----------");
+  		
+  		String s = filepath;
+		Path path = Paths.get(s);
+		StringBuffer sb = new StringBuffer();
+		logger.info("file : " + filepath);
+		try {
+			Files.lines(path).forEach(sb::append);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		logger.info(sb.toString());
+  		return "Done. Check Log.";
+  	}
+  	
 }
