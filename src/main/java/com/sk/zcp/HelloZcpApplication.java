@@ -140,14 +140,12 @@ public class HelloZcpApplication {
   		
   		String s = filepath;
 		Path path = Paths.get(s);
-		StringBuffer sb = new StringBuffer();
 		logger.info("file : " + filepath);
 		try {
-			Files.lines(path).forEach(sb::append);
+			Files.lines(path).forEach(System.out::println);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println(sb.toString());
   		return "Done. Check Log.";
   	}
   	
