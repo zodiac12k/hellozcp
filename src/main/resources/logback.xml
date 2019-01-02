@@ -6,11 +6,19 @@
     <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
     <include resource="org/springframework/boot/logging/logback/file-appender.xml" />
 
+	<property name="MDC_CONSOLE_PATTERN" value="%d [%thread][%X{UUID}] %-5level %36logger{36} [EID:%X{eid}] [SS-ID:%X{ssid}] [USER-ID:%X{user}] - %m%n"/>
+    <appender name="MDC_CONSOLE" class="ch.qos.logback.core.ConsoleAppender"> 
+        <encoder>
+            <Pattern>${MDC_CONSOLE_PATTERN}</Pattern>
+        </encoder> 
+    </appender>
+    
     <logger name="org.springframework" level="INFO"/>
     <logger name="org.springframework.beans.factory.support" level="DEBUG"/>
     
     <root level="DEBUG">
-        <appender-ref ref="CONSOLE" />
+<!--         <appender-ref ref="CONSOLE" /> -->
+        <appender-ref ref="MDC_CONSOLE" />
         <appender-ref ref="FILE" />
     </root>
     

@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,16 +13,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,6 +32,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class HelloZcpApplication {
 
 	private static final Logger logger = LoggerFactory.getLogger(HelloZcpApplication.class);
+	
+	@Autowired
+	private HelloZcpService service;
 	
 	public static void main(String[] args) {
 		SpringApplication.run(HelloZcpApplication.class, args);
@@ -65,7 +66,7 @@ public class HelloZcpApplication {
 				
 		return sb.toString();
 	}
-  
+	
   	@GetMapping("/printErrorLog") 
 	public String error() throws Exception{
   		logger.info("--------- printErrorLog start ----------");
@@ -86,9 +87,19 @@ public class HelloZcpApplication {
   	
   	@GetMapping("/404") 
 	public void notFound(HttpServletResponse httpResponse) throws Exception{
+  		logger.info("---------- 404 start ------------");
   		httpResponse.sendRedirect("/");
 	}
-  
+  	
+  	@GetMapping("/mdc") 
+	public void mdcTest1(HttpServletResponse httpResponse) throws Exception{
+  		logger.info("---------- mdc start ------------");
+  		service.method1();
+  		service.method2();
+  		service.method3();
+  		httpResponse.sendRedirect("/");
+	}
+
   	@SuppressWarnings("static-access")
 	@GetMapping("/timeout") 
 	public String timeout(@RequestParam(defaultValue="60")String timeout) {

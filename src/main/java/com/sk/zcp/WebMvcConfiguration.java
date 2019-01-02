@@ -3,11 +3,14 @@ package com.sk.zcp;
 import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 import org.springframework.boot.web.servlet.ErrorPage;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+import com.sk.zcp.log.MdcLoggingFilter;
 
 @Configuration
 public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
@@ -30,5 +33,14 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 				container.addErrorPages(error401Page, error404Page, error500Page);
 			}
 		};
+	}
+	
+	@Bean
+	public FilterRegistrationBean loggingFilter(){
+	    FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+	    
+	    registrationBean.setFilter(new MdcLoggingFilter());
+	         
+	    return registrationBean;    
 	}
 }
