@@ -44,7 +44,7 @@ spec:
         - mountPath: /etc/localtime
           name: timezone
       imagePullSecrets:
-      - name: harbor-secret
+      - name: pri-harbor-secret
       volumes:  
       - name: timezone
         hostPath:
