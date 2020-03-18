@@ -38,8 +38,8 @@ podTemplate(label:label,
         }
      
         stage('ANCHORE') {
-          def imageLine = '${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${VERSION}'
-          writeFile file: 'anchore_images', text: imageLine
+          def imageLine = "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${VERSION}"
+          writeFile file: 'anchore_images', text: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${VERSION}"
           anchore name: 'anchore_images'
         }
  
