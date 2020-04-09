@@ -1,8 +1,8 @@
 @Library('retort-lib') _
 def label = "jenkins-${UUID.randomUUID().toString()}"
  
-def ZCP_USERID = 'earth1223'
-def DOCKER_IMAGE = 'earth1223/hellozcp'
+def ZCP_USERID = 'admin'
+def DOCKER_IMAGE = 'test/hellozcp'
 def K8S_NAMESPACE = 'earth1223'
 def VERSION = 'develop'
  
