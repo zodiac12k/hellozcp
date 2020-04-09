@@ -40,7 +40,7 @@ podTemplate(label:label,
         stage('ANCHORE') {
             def imageLine = "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${VERSION}"
             writeFile file: 'anchore_images', text: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${VERSION}"
-            anchore name: 'anchore_images', policyBundleId: '2c53a13c-1765-11e8-82ef-23527761d060'
+            anchore name: 'anchore_images', policyBundleId: 'anchore_skt_hcp_bmt'
         }
  
         stage('DEPLOY') {
