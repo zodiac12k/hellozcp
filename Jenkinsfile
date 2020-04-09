@@ -11,7 +11,7 @@ podTemplate(label:label,
     containers: [
         containerTemplate(name: 'maven', image: 'maven:3.5.2-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
         // containerTemplate(name: 'docker', image: 'docker:19-dind', ttyEnabled: true, command: 'dockerd-entrypoint.sh', privileged: true),
-        containerTemplate(name: 'buildah', image: 'buildah/buildah', ttyEnabled: true, command: 'cat'),
+        containerTemplate(name: 'buildah', image: 'buildah/buildah', ttyEnabled: true, command: 'cat', privileged: true),
         containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl', ttyEnabled: true, command: 'cat')
     ],
     volumes: [
