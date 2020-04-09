@@ -15,7 +15,8 @@ podTemplate(label:label,
         containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl', ttyEnabled: true, command: 'cat')
     ],
     volumes: [
-        persistentVolumeClaim(mountPath: '/root/.m2', claimName: 'zcp-jenkins-mvn-repo')
+        persistentVolumeClaim(mountPath: '/root/.m2', claimName: 'zcp-jenkins-mvn-repo'),
+        hostPathVolume(hostPath: '/var/lib/containers', mountPath: '/var/lib/containers')
     ]) {
  
     node(label) {
