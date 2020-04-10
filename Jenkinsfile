@@ -13,13 +13,13 @@ podTemplate(label:label,
     serviceAccount: "zcp-system-sa-${USERID}",
     containers: [
         containerTemplate(name: 'maven', image: 'maven:3.5.2-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
-        // containerTemplate(name: 'docker', image: 'docker:19-dind', ttyEnabled: true, command: 'dockerd-entrypoint.sh', privileged: true),
+        containerTemplate(name: 'docker', image: 'docker:17-dind', ttyEnabled: true, command: 'dockerd-entrypoint.sh', privileged: true),
         containerTemplate(name: 'buildah', image: 'buildah/buildah', ttyEnabled: true, command: 'cat', privileged: true),
         containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl', ttyEnabled: true, command: 'cat')
     ],
     volumes: [
         persistentVolumeClaim(mountPath: '/root/.m2', claimName: 'zcp-jenkins-mvn-repo'),
-        // hostPathVolume(hostPath: '/var/lib/containers', mountPath: '/var/lib/containers')
+        hostPathVolume(hostPath: '/var/lib/containers', mountPath: '/var/lib/containers')
     ]) {
  
     node(label) {
@@ -33,6 +33,13 @@ podTemplate(label:label,
         //        mavenBuild goal: 'clean package', systemProperties:['maven.repo.local':"/root/.m2/${JOB_NAME}"]
         //    }
         //}
+        
+        stage('BUILD DOCKER IMAGE') {
+            container('buildah') {
+                dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+                dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
+            }
+        }
  
         stage('PULL DOCKER IMAGE') {
             container('buildah') {
