@@ -24,7 +24,7 @@ podTemplate(label:label,
  
     node(label) {
         stage('PRINT VARIABLES') {
-            echo '${HARBOR_REGISTRY}'
+            echo '${env.HARBOR_REGISTRY}'
         }
         
         stage('SOURCE CHECKOUT') {
@@ -41,7 +41,7 @@ podTemplate(label:label,
         stage('PULL DOCKER IMAGE') {
             container('buildah') {
                 sh 'buildah version'
-                sh 'buildah pull ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}'
+                sh 'buildah pull ${env.INTERNAL_REGISTRY}/${env.DOCKER_IMAGE}:${DEV_VERSION}'
                 //dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                 //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
             }
