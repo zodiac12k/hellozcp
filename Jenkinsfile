@@ -23,12 +23,6 @@ podTemplate(label:label,
     ]) {
  
     node(label) {
-        stage('PRINT VARIABLES') {
-            sh 'echo ${HARBOR_REGISTRY}'
-            sh 'echo ${INTERNAL_REGISTRY}'
-            sh 'echo ${DOCKER_IMAGE}'
-        }
-        
         stage('SOURCE CHECKOUT') {
             def repo = checkout scm
             env.SCM_INFO = repo.inspect()
@@ -42,8 +36,8 @@ podTemplate(label:label,
  
         stage('PULL DOCKER IMAGE') {
             container('buildah') {
-                sh 'buildah version'
-                sh 'buildah pull ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}'
+                sh "buildah version"
+                sh "buildah pull ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                 //dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                 //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
             }
@@ -51,7 +45,7 @@ podTemplate(label:label,
      
         stage('SIGN IMAGE') {
             container('buildah') {
-                sh 'echo sign image'
+                sh "echo sign image"
             }
         }
      
@@ -63,13 +57,13 @@ podTemplate(label:label,
      
         stage('RETAG DOCKER IMAGE') {
             container('buildah') {
-                sh 'buildah tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}'
+                sh "buildah tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
             }
         }
         
         stage('PUSH DOCKER IMAGE') {
             container('buildah') {
-                sh 'buildah push ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}'
+                sh "buildah push ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
             }
         }
  
