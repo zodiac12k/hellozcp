@@ -58,7 +58,7 @@ podTemplate(label:label,
         
         stage('PUSH DOCKER IMAGE') {
             container('buildah') {
-                sh "buildah login ${HARBOR_REGISTRY}"
+                sh "buildah login ${HARBOR_REGISTRY} -u admin -p !Cloudev00"
                 sh "buildah push ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
             }
         }
