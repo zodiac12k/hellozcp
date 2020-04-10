@@ -24,7 +24,7 @@ podTemplate(label:label,
  
     node(label) {
         stage('PRINT VARIABLES') {
-            echo ${HARBOR_REGISTRY}
+            echo '${HARBOR_REGISTRY}'
         }
         
         stage('SOURCE CHECKOUT') {
