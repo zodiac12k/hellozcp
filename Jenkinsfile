@@ -45,7 +45,6 @@ podTemplate(label:label,
             container('buildah') {
                 sh "buildah version"
                 sh "buildah pull ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
-                sh "buildah images"
                 //dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                 //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
             }
@@ -67,7 +66,7 @@ podTemplate(label:label,
         stage('PUSH DOCKER IMAGE') {
             container('buildah') {
                 // https://github.com/containers/buildah/blob/master/docs/buildah-login.md
-                sh "buildah login -u admin -p !Cloudev00 ${HARBOR_REGISTRY}"
+                sh "buildah login -u admin -p !Cloudev00 --tls-verify false ${HARBOR_REGISTRY}"
                 sh "buildah push ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
             }
         }
