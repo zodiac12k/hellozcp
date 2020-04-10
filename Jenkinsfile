@@ -2,7 +2,7 @@
 def label = "jenkins-${UUID.randomUUID().toString()}"
  
 def USERID = 'admin'
-def INTERNAL_REGISTRY = 'pog-dev-registry'
+def INTERNAL_REGISTRY = 'pog-dev-registry.cloudzcp.io'
 def DOCKER_IMAGE = 'earth1223/hellozcp'
 def K8S_NAMESPACE = 'earth1223'
 def DEV_VERSION = 'develop'
