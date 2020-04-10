@@ -19,7 +19,7 @@ podTemplate(label:label,
     ],
     volumes: [
         persistentVolumeClaim(mountPath: '/root/.m2', claimName: 'zcp-jenkins-mvn-repo'),
-        hostPathVolume(hostPath: '/var/lib/containers', mountPath: '/var/lib/containers')
+        // hostPathVolume(hostPath: '/var/lib/containers', mountPath: '/var/lib/containers')
     ]) {
  
     node(label) {
