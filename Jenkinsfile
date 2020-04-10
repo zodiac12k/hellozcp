@@ -2,10 +2,10 @@
 def label = "jenkins-${UUID.randomUUID().toString()}"
  
 def USERID = 'admin'
-def INTERNAL_REGISTRY = 'pog-dev-registry.cloudzcp.io'
-def DOCKER_IMAGE = 'earth1223/hellozcp'
+def INTERNAL_REGISTRY = 'default-route-openshift-image-registry.apps.hcp.darumtech.net'
+def DOCKER_IMAGE = 'bmt-workload/ghost'
 def K8S_NAMESPACE = 'earth1223'
-def DEV_VERSION = 'develop'
+def DEV_VERSION = 'latest'
 def PROD_VERSION = 'prod'
 
 
@@ -25,7 +25,7 @@ podTemplate(label:label,
     node(label) {
         stage('SOURCE CHECKOUT') {
             def repo = checkout scm
-            env.SCM_INFO = repo.inspect()
+            //env.SCM_INFO = repo.inspect()
         }
  
         //stage('BUILD MAVEN') {
@@ -41,9 +41,10 @@ podTemplate(label:label,
         //    }
         //}
  
-        stage('PULL DOCKER IMAGE') {
+        stage('PULL DEVELOP IMAGE') {
             container('buildah') {
-                sh "buildah version"
+                // https://github.com/containers/buildah/blob/master/docs/buildah-login.md
+                sh "buildah login -u cluster-admin -p 9SIaplD8KwORfNWw63o4eRWvvMm5gYMfU1f-UMbZ5Wg --tls-verify=false ${INTERNAL_REGISTRY}"
                 sh "buildah pull ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                 //dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                 //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
@@ -66,7 +67,7 @@ podTemplate(label:label,
         stage('PUSH DOCKER IMAGE') {
             container('buildah') {
                 // https://github.com/containers/buildah/blob/master/docs/buildah-login.md
-                sh "buildah login -u admin -p !Cloudev00 --tls-verify false ${HARBOR_REGISTRY}"
+                sh "buildah login -u admin -p !Cloudev00 --tls-verify=false ${HARBOR_REGISTRY}"
                 sh "buildah push ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
             }
         }
