@@ -45,7 +45,8 @@ podTemplate(label:label,
      
         stage('SIGN IMAGE') {
             container('buildah') {
-                sh "echo sign image"
+                sh "cat /etc/containers/registries.conf"
+                sh "cat /etc/containers/policy.json"
             }
         }
      
