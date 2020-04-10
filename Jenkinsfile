@@ -50,12 +50,6 @@ podTemplate(label:label,
             }
         }
      
-        stage('ANCHORE EVALUATION') {
-            def imageLine = "${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
-            writeFile file: 'anchore_images', text: "${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
-            anchore name: 'anchore_images', policyBundleId: 'anchore_skt_hcp_bmt'
-        }
-     
         stage('RETAG DOCKER IMAGE') {
             container('buildah') {
                 sh "buildah tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
@@ -64,10 +58,17 @@ podTemplate(label:label,
         
         stage('PUSH DOCKER IMAGE') {
             container('buildah') {
+                sh "buildah login ${HARBOR_REGISTRY}"
                 sh "buildah push ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
             }
         }
- 
+     
+        stage('ANCHORE EVALUATION') {
+            def imageLine = "${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+            writeFile file: 'anchore_images', text: "${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+            anchore name: 'anchore_images', policyBundleId: 'anchore_skt_hcp_bmt'
+        }
+
         stage('DEPLOY') {
             container('kubectl') {
                 kubeCmd.apply file: 'k8s/service.yaml', namespace: K8S_NAMESPACE
