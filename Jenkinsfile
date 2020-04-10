@@ -13,7 +13,7 @@ podTemplate(label:label,
     serviceAccount: "zcp-system-sa-${USERID}",
     containers: [
         containerTemplate(name: 'maven', image: 'maven:3.5.2-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
-        containerTemplate(name: 'docker', image: 'docker:17-dind', ttyEnabled: true, command: 'dockerd-entrypoint.sh', privileged: true),
+        //containerTemplate(name: 'docker', image: 'docker:17-dind', ttyEnabled: true, command: 'dockerd-entrypoint.sh', privileged: true),
         containerTemplate(name: 'buildah', image: 'buildah/buildah', ttyEnabled: true, command: 'cat', privileged: true),
         containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl', ttyEnabled: true, command: 'cat')
     ],
@@ -34,17 +34,18 @@ podTemplate(label:label,
         //    }
         //}
         
-        stage('BUILD DOCKER IMAGE') {
-            container('buildah') {
-                dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
-                dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
-            }
-        }
+        //tage('BUILD DOCKER IMAGE') {
+        //    container('buildah') {
+        //        dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+        //        dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
+        //    }
+        //}
  
         stage('PULL DOCKER IMAGE') {
             container('buildah') {
                 sh "buildah version"
                 sh "buildah pull ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+                sh "buildah images"
                 //dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                 //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
             }
@@ -73,7 +74,7 @@ podTemplate(label:label,
      
         stage('ANCHORE EVALUATION') {
             def imageLine = "${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
-            writeFile file: 'anchore_images', text: "${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+            writeFile file: 'anchore_images', text: imageLine
             anchore name: 'anchore_images', policyBundleId: 'anchore_skt_hcp_bmt'
         }
 
