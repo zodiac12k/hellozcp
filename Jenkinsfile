@@ -1,13 +1,16 @@
 @Library('retort-lib') _
 def label = "jenkins-${UUID.randomUUID().toString()}"
  
-def ZCP_USERID = 'admin'
-def DOCKER_IMAGE = 'test/hellozcp'
+def USERID = 'admin'
+def INTERNAL_REGISTRY = 'pog-dev-registry'
+def DOCKER_IMAGE = 'earth1223/hellozcp'
 def K8S_NAMESPACE = 'earth1223'
-def VERSION = 'develop'
- 
+def DEV_VERSION = 'develop'
+def PROD_VERSION = 'prod'
+
+
 podTemplate(label:label,
-    serviceAccount: "zcp-system-sa-${ZCP_USERID}",
+    serviceAccount: "zcp-system-sa-${USERID}",
     containers: [
         containerTemplate(name: 'maven', image: 'maven:3.5.2-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
         // containerTemplate(name: 'docker', image: 'docker:19-dind', ttyEnabled: true, command: 'dockerd-entrypoint.sh', privileged: true),
@@ -20,30 +23,52 @@ podTemplate(label:label,
     ]) {
  
     node(label) {
+        stage('PRINT VARIABLES') {
+            echo ${HARBOR_REGISTRY}
+        }
+        
         stage('SOURCE CHECKOUT') {
             def repo = checkout scm
             env.SCM_INFO = repo.inspect()
         }
  
-        stage('BUILD MAVEN') {
-            container('maven') {
-                mavenBuild goal: 'clean package', systemProperties:['maven.repo.local':"/root/.m2/${JOB_NAME}"]
-            }
-        }
+        //stage('BUILD MAVEN') {
+        //    container('maven') {
+        //        mavenBuild goal: 'clean package', systemProperties:['maven.repo.local':"/root/.m2/${JOB_NAME}"]
+        //    }
+        //}
  
-        stage('BUILD DOCKER IMAGE') {
+        stage('PULL DOCKER IMAGE') {
             container('buildah') {
                 sh 'buildah version'
-                sh 'buildah images'
-                //dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${VERSION}"
-                //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: VERSION, credentialsId: "HARBOR_CREDENTIALS"
+                sh 'buildah pull ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}'
+                //dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+                //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
             }
         }
      
-        stage('ANCHORE') {
-            def imageLine = "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${VERSION}"
-            writeFile file: 'anchore_images', text: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${VERSION}"
+        stage('SIGN IMAGE') {
+            container('buildah') {
+                sh 'echo sign image'
+            }
+        }
+     
+        stage('ANCHORE EVALUATION') {
+            def imageLine = "${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+            writeFile file: 'anchore_images', text: "${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
             anchore name: 'anchore_images', policyBundleId: 'anchore_skt_hcp_bmt'
+        }
+     
+        stage('RETAG DOCKER IMAGE') {
+            container('buildah') {
+                sh 'buildah tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}'
+            }
+        }
+        
+        stage('PUSH DOCKER IMAGE') {
+            container('buildah') {
+                sh 'buildah push ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}'
+            }
         }
  
         stage('DEPLOY') {
