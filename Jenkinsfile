@@ -2,7 +2,7 @@
 def label = "jenkins-${UUID.randomUUID().toString()}"
  
 def USERID = 'admin'
-def INTERNAL_REGISTRY = 'default-route-openshift-image-registry.apps.hcp.darumtech.net'
+def INTERNAL_REGISTRY = 'default-route-openshift-image-registry.apps.hcp.skcloud.io'
 def DOCKER_IMAGE = 'bmt-workload/ghost'
 def K8S_NAMESPACE = 'earth1223'
 def DEV_VERSION = 'latest'
@@ -36,7 +36,7 @@ podTemplate(label:label,
         
         stage('BUILD DOCKER IMAGE') {
             container('buildah') {
-                sh "buildah bud --tag ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ."
+                sh "buildah bud --tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ."
                 //dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                 //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
             }
