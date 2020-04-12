@@ -7,9 +7,6 @@ def DOCKER_IMAGE = 'bmt-workload/ghost'
 def K8S_NAMESPACE = 'earth1223'
 def DEV_VERSION = 'latest'
 def PROD_VERSION = 'prod'
-def USERNAME = 'robot$jenkins'
-def PASSWORD = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODkyOTg4NTgsImlhdCI6MTU4NjcwNjg1OCwiaXNzIjoiaGFyYm9yLXRva2VuLWRlZmF1bHRJc3N1ZXIiLCJpZCI6NSwicGlkIjozLCJhY2Nlc3MiOlt7IlJlc291cmNlIjoiL3Byb2plY3QvMy9yZXBvc2l0b3J5IiwiQWN0aW9uIjoicHVzaCIsIkVmZmVjdCI6IiJ9XX0.uVNus8kzp4TjX34r74jQGIm4N96SkYiLRaCMHf16CATYQlRPUAXOtzBD5QF-eFfVNvRJcfdqo5mqqdhatoRaeLfwwSONP-sLSb6LflySiF_pApG9vzotp9_-sVl-nayrMmguN618ZuTYuV4q1YPUa6II50e7yKxspYU4YYYVtpoux70VvmbT6AgdyGlDrnHeMv15plorMrDqQtVoBsjEaFIqlNuu8FdAM4yCKSpU7eF-0bX4N-ZfUZfBGgjmFhT87gBXIlE5WZU14qPeb91_3Tak8-aYaX_dkrDYy6Vmr9bvQfD0NicDls0Vv8g2VtV6eacBwB8RSBBgxCM_MhGRAhx79ZaZsGH9c466T82gws2xAfu5z3-7E7T5oCxyzqwuupHJozdD8mMUhCU0AjIAQBv64-SYmCvMZYxV4eFBjlwxGR4SCDqC9pzksatDWCkBhLL3bKESZjsO_FdSvzcpWbWUtzIdaPy0clyCpaSRbtA9ew4MqC8_WBv0xcbTPtAHSkyXrFdRn-wcJBXZAb8LqKpaJ7lqF3ExIllV-hdnzZ_OUidSCOF5rgLktjYGQPnYe5Gx3JG3SzQ4QxLuheVBmd1AQSJd3rQPUjThe_WZ2oeaewqV0sAyI6A4k6IeRwqOKUImhbwl9707c9QTvl4OTMIK6bNVqntTaRVyMj-qR-o'
-
 
 podTemplate(label:label,
     serviceAccount: "zcp-system-sa-${USERID}",
@@ -75,10 +72,12 @@ podTemplate(label:label,
         //}
      
         stage('PUSH DOCKER IMAGE') {
-            container('buildah') {
-                // https://github.com/containers/buildah/blob/master/docs/buildah-login.md
-             sh "buildah login -u ${USERNAME} -p ${PASSWORD} --tls-verify=false ${HARBOR_REGISTRY}"
-                sh "buildah push --sign-by zodiac12k@sk.com --tls-verify=false ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
+            withCredentials([usernamePassword(credentialsId: 'harbor-credentials', passwordVariable: 'HARBOR_PASSWORD', usernameVariable: 'HARBOR_USERNAME')]) {
+                container('buildah') {
+                    // https://github.com/containers/buildah/blob/master/docs/buildah-login.md
+                    sh "buildah login -u ${HARBOR_USERNAME} -p ${HARBOR_PASSWORD} --tls-verify=false ${HARBOR_REGISTRY}"
+                    sh "buildah push --sign-by zodiac12k@sk.com --tls-verify=false ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
+                }
             }
         }
 
