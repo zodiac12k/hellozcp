@@ -76,7 +76,7 @@ podTemplate(label:label,
             container('buildah') {
                 // https://github.com/containers/buildah/blob/master/docs/buildah-login.md
                 sh "buildah login -u admin -p !Cloudev00 --tls-verify=false ${HARBOR_REGISTRY}"
-                sh "buildah push --sign-by zodiac12k@sk.com ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
+                sh "buildah push --sign-by zodiac12k@sk.com --tls-verify=false ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
             }
         }
 
