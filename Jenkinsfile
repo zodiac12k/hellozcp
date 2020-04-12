@@ -45,7 +45,7 @@ podTemplate(label:label,
         //containerTemplate(name: 'docker', image: 'docker:17-dind', ttyEnabled: true, command: 'dockerd-entrypoint.sh', privileged: true),
         containerTemplate(name: 'buildah', image: 'quay.io/buildah/stable', ttyEnabled: true, command: 'cat', privileged: true),
         containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl', ttyEnabled: true, command: 'cat'),
-        containerTemplate(name: 'ubuntu', image: 'ubuntu', ttyEnabled: true, command: 'cat')
+        //containerTemplate(name: 'ubuntu', image: 'ubuntu', ttyEnabled: true, command: 'cat')
     ],
     volumes: [
         persistentVolumeClaim(mountPath: '/root/.m2', claimName: 'zcp-jenkins-mvn-repo'),
@@ -98,11 +98,15 @@ podTemplate(label:label,
      
         stage('PUSH DOCKER IMAGE') {
             withCredentials([usernamePassword(credentialsId: 'harbor-credentials', passwordVariable: 'HARBOR_PASSWORD', usernameVariable: 'HARBOR_USERNAME')]) {
-                container('ubuntu') {
+                container('buildah') {
+                    // Get the latest binary
+                    sh "curl -L https://github.com/theupdateframework/notary/releases/download/v0.6.1/notary-Linux-amd64 -o notary"
+                    // Make it executable
+                    sh "chmod +x notary"
+                    // Move it to a location in your path. Use the -Z option if you're using SELinux.
+                    sh "sudo mv -Z notary /usr/bin/"
                     sh "notary --help"
                     sh "notary -s http://harbor-harbor-notary-server.ns-repository:4443"
-                }
-                container('buildah') {
                     // https://github.com/containers/buildah/blob/master/docs/buildah-login.md
                     sh "buildah login -u ${HARBOR_USERNAME} -p ${HARBOR_PASSWORD} --tls-verify=false ${HARBOR_REGISTRY}"
                     sh "buildah push --tls-verify=false ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
