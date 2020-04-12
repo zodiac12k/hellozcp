@@ -65,11 +65,11 @@ podTemplate(label:label,
             }
         }
      
-        stage('ANCHORE EVALUATION') {
-            def imageLine = "${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
-            writeFile file: 'anchore_images', text: imageLine
-            anchore name: 'anchore_images'//, policyBundleId: 'anchore_skt_hcp_bmt'
-        }
+        //stage('ANCHORE EVALUATION') {
+        //    def imageLine = "${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+        //    writeFile file: 'anchore_images', text: imageLine
+        //    anchore name: 'anchore_images'//, policyBundleId: 'anchore_skt_hcp_bmt'
+        //}
      
         stage('PUSH DOCKER IMAGE') {
             container('buildah') {
