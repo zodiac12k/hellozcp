@@ -36,7 +36,7 @@ podTemplate(label:label,
         stage('BUILD DOCKER IMAGE') {
             container('buildah') {
                 sh "buildah version"
-                sh "buildah bud --tag --format docker ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ."
+                sh "buildah bud --format docker --tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ."
                 //dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                 //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
             }
