@@ -7,8 +7,7 @@ def DOCKER_IMAGE = 'bmt-workload/ghost'
 def K8S_NAMESPACE = 'earth1223'
 def DEV_VERSION = 'latest'
 def PROD_VERSION = 'prod'
-def GPG_KEY = """
------BEGIN PGP PUBLIC KEY BLOCK-----
+def GPG_KEY = """-----BEGIN PGP PUBLIC KEY BLOCK-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
 mQENBF6TQ5IBCAC+lyu21/G2E/rXQgiJ+rL/4eZV7rVocT7yYFlwr0i0oih7H32+
@@ -37,8 +36,7 @@ XLpWIyip0McI0EaeZvIcT+cKUHs4e1okjNJWod240tj0IGU5CmS6aGGbegzTxqrZ
 ZUDCym0k9763N5Ot24yggOrcqwE005YeNnm63Sojvi5o/DTrp5I1VKcVpvjhmYGZ
 nOpIOAi7/NvboWkEPWXTbvt+bN11O4PLso4uKwM9bYaAzoc=
 =Wty4
------END PGP PUBLIC KEY BLOCK-----
-"""
+-----END PGP PUBLIC KEY BLOCK-----"""
 
 podTemplate(label:label,
     serviceAccount: "zcp-system-sa-${USERID}",
