@@ -28,28 +28,29 @@ podTemplate(label:label,
             //env.SCM_INFO = repo.inspect()
         }
  
-        //stage('BUILD MAVEN') {
-        //    container('maven') {
-        //        mavenBuild goal: 'clean package', systemProperties:['maven.repo.local':"/root/.m2/${JOB_NAME}"]
-        //    }
-        //}
+        stage('BUILD MAVEN') {
+            container('maven') {
+                mavenBuild goal: 'clean package', systemProperties:['maven.repo.local':"/root/.m2/${JOB_NAME}"]
+            }
+        }
         
-        //tage('BUILD DOCKER IMAGE') {
-        //    container('buildah') {
-        //        dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
-        //        dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
-        //    }
-        //}
- 
-        stage('PULL DEVELOP IMAGE') {
+        stage('BUILD DOCKER IMAGE') {
             container('buildah') {
-                // https://github.com/containers/buildah/blob/master/docs/buildah-login.md
-                sh "buildah login -u cluster-admin -p 9SIaplD8KwORfNWw63o4eRWvvMm5gYMfU1f-UMbZ5Wg --tls-verify=false ${INTERNAL_REGISTRY}"
-                sh "buildah pull --tls-verify=false ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+                sh "buildah bud --tag ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                 //dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                 //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
             }
         }
+ 
+        //stage('PULL DEVELOP IMAGE') {
+        //    container('buildah') {
+                // https://github.com/containers/buildah/blob/master/docs/buildah-login.md
+        //        sh "buildah login -u cluster-admin -p 9SIaplD8KwORfNWw63o4eRWvvMm5gYMfU1f-UMbZ5Wg --tls-verify=false ${INTERNAL_REGISTRY}"
+        //        sh "buildah pull --tls-verify=false ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+                //dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+                //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
+        //    }
+        //}
      
         stage('SIGN IMAGE') {
             container('buildah') {
@@ -74,7 +75,7 @@ podTemplate(label:label,
             container('buildah') {
                 // https://github.com/containers/buildah/blob/master/docs/buildah-login.md
                 sh "buildah login -u admin -p !Cloudev00 --tls-verify=false ${HARBOR_REGISTRY}"
-                sh "buildah push ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
+                sh "buildah push --sign-by zodiac12k@sk.com ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
             }
         }
 
