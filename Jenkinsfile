@@ -94,13 +94,8 @@ podTemplate(label:label,
                 container('docker') {
                     sh "docker login -u ${INTERNAL_REGISTRY_USERNAME} -p ${INTERNAL_REGISTRY_PASSWORD} ${INTERNAL_REGISTRY}"
                     sh "docker pull ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+                    sh "docker logout ${INTERNAL_REGISTRY}"
                 }
-            }
-        }
-        
-        stage('RETAG IMAGE') {
-            container('docker') {
-                sh "docker tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
             }
         }
         
@@ -112,7 +107,9 @@ podTemplate(label:label,
                     sh "export DOCKER_CONTENT_TRUST_SERVER=${NOTARY_SERVER}"
                     sh "export DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE=${DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE}"
                     sh "export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE=${DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE}"
+                    sh "docker tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
                     sh "docker push ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
+                    sh "docker logout ${HARBOR_REGISTRY}"
                     //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: PROD_VERSION, credentialsId: "harbor-credentials"
                 }
             }
