@@ -93,6 +93,7 @@ podTemplate(label:label,
             container('docker') {
                 sh "export DOCKER_CONTENT_TRUST=1"
                 sh "export DOCKER_CONTENT_TRUST_SERVER=https://harbor-harbor-notary-server.ns-repository:4443"
+                sh "docker images"
                 dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: PROD_VERSION, credentialsId: "harbor-credentials"
             }
         }
