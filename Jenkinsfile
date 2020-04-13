@@ -41,7 +41,7 @@ podTemplate(label:label,
     serviceAccount: "zcp-system-sa-${USERID}",
     containers: [
         containerTemplate(name: 'maven', image: 'maven:3.5.2-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
-        containerTemplate(name: 'docker', image: 'earth1223/docker:19-dind', ttyEnabled: true, command: 'dockerd-entrypoint.sh', privileged: true),
+        containerTemplate(name: 'docker', image: 'earth1223/docker:19-dind', ttyEnabled: true, command: 'dockerd-entrypoint.sh', privileged: true, alwaysPullImage: true),
         containerTemplate(name: 'buildah', image: 'quay.io/buildah/stable', ttyEnabled: true, command: 'cat', privileged: true),
         containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl', ttyEnabled: true, command: 'cat'),
         //containerTemplate(name: 'ubuntu', image: 'ubuntu', ttyEnabled: true, command: 'cat')
