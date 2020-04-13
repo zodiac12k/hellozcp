@@ -52,7 +52,7 @@ podTemplate(label:label,
     ]) {
  
     node(label) {
-        stage('SOURCE CHECKOUT') {
+        stage('CHECKOUT') {
             def repo = checkout scm
             //env.SCM_INFO = repo.inspect()
         }
@@ -77,7 +77,7 @@ podTemplate(label:label,
                 container('buildah') {
                     // https://github.com/containers/buildah/blob/master/docs/buildah-pull.md
                     // sh "buildah login -u ${INTERNAL_REGISTRY_USERNAME} -p ${INTERNAL_REGISTRY_PASSWORD} --tls-verify=false ${INTERNAL_REGISTRY}"
-                    sh "buildah pull -creds ${INTERNAL_REGISTRY_USERNAME}:${INTERNAL_REGISTRY_PASSWORD} --tls-verify=false ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+                    sh "buildah pull --creds ${INTERNAL_REGISTRY_USERNAME}:${INTERNAL_REGISTRY_PASSWORD} --tls-verify=false ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                     //dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                     //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
                 }
