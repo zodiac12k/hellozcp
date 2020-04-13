@@ -41,7 +41,7 @@ podTemplate(label:label,
     serviceAccount: "zcp-system-sa-${USERID}",
     containers: [
         containerTemplate(name: 'maven', image: 'maven:3.5.2-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
-        //containerTemplate(name: 'docker', image: 'docker:17-dind', ttyEnabled: true, command: 'dockerd-entrypoint.sh', privileged: true),
+        containerTemplate(name: 'docker', image: 'earth1223/docker:19-dind', ttyEnabled: true, command: 'dockerd-entrypoint.sh', privileged: true),
         containerTemplate(name: 'buildah', image: 'quay.io/buildah/stable', ttyEnabled: true, command: 'cat', privileged: true),
         containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl', ttyEnabled: true, command: 'cat'),
         //containerTemplate(name: 'ubuntu', image: 'ubuntu', ttyEnabled: true, command: 'cat')
@@ -83,40 +83,33 @@ podTemplate(label:label,
             }
         }
      
-        stage('SIGN IMAGE') {
-            container('buildah') {
-                sh "cat /etc/containers/registries.conf"
-                sh "cat /etc/containers/policy.json"
-            }
-        }
-     
-        stage('ANCHORE EVALUATION') {
-            def imageLine = "${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
-            writeFile file: 'anchore_images', text: imageLine
-            anchore name: 'anchore_images', engineRetries: '3000'//, policyBundleId: 'anchore_skt_hcp_bmt'
-        }
-     
         stage('RETAG DOCKER IMAGE') {
             container('buildah') {
                 sh "buildah tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
             }
         }
-     
-        stage('PUSH DOCKER IMAGE') {
-            withCredentials([usernamePassword(credentialsId: 'harbor-credentials', passwordVariable: 'HARBOR_PASSWORD', usernameVariable: 'HARBOR_USERNAME')]) {
-                container('buildah') {
-                    // Get the latest binary
-                    sh "curl -L https://github.com/theupdateframework/notary/releases/download/v0.6.1/notary-Linux-amd64 -o notary"
-                    // Make it executable
-                    sh "chmod +x notary"
-                    // Move it to a location in your path. Use the -Z option if you're using SELinux.
-                    sh "sudo mv -Z notary /usr/bin/"
-                    sh "notary --help"
-                    //sh "notary -s http://harbor-harbor-notary-server.ns-repository:4443 publish ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
-                    // https://github.com/containers/buildah/blob/master/docs/buildah-push.md
-                    sh "buildah push --creds ${HARBOR_USERNAME}:${HARBOR_PASSWORD} --tls-verify=false ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
-                }
+        
+        stage('SIGN AND PUSH IMAGE') {
+            container('docker') {
+                sh "export DOCKER_CONTENT_TRUST=1"
+                sh "export DOCKER_CONTENT_TRUST_SERVER=https://harbor-harbor-notary-server.ns-repository:4443"
+                dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: PROD_VERSION, credentialsId: "harbor-credentials"
             }
+        }
+     
+        //stage('PUSH DOCKER IMAGE') {
+        //    withCredentials([usernamePassword(credentialsId: 'harbor-credentials', passwordVariable: 'HARBOR_PASSWORD', usernameVariable: 'HARBOR_USERNAME')]) {
+        //        container('buildah') {
+                    // https://github.com/containers/buildah/blob/master/docs/buildah-push.md
+        //            sh "buildah push --creds ${HARBOR_USERNAME}:${HARBOR_PASSWORD} --tls-verify=false ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
+        //        }
+        //    }
+        //}
+     
+        stage('ANCHORE EVALUATION') {
+            def imageLine = "${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+            writeFile file: 'anchore_images', text: imageLine
+            anchore name: 'anchore_images', engineRetries: '3000'//, policyBundleId: 'anchore_skt_hcp_bmt'
         }
 
         stage('DEPLOY') {
