@@ -106,7 +106,7 @@ podTemplate(label:label,
                     // Move it to a location in your path. Use the -Z option if you're using SELinux.
                     sh "sudo mv -Z notary /usr/bin/"
                     sh "notary --help"
-                    sh "notary -s http://harbor-harbor-notary-server.ns-repository:4443"
+                    sh "notary -s http://harbor-harbor-notary-server.ns-repository:4443 publish ${HARBOR_REGISTRY}"
                     // https://github.com/containers/buildah/blob/master/docs/buildah-login.md
                     sh "buildah login -u ${HARBOR_USERNAME} -p ${HARBOR_PASSWORD} --tls-verify=false ${HARBOR_REGISTRY}"
                     sh "buildah push --tls-verify=false ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
@@ -115,7 +115,7 @@ podTemplate(label:label,
         }
      
         stage('ANCHORE EVALUATION') {
-            def imageLine = "${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+            def imageLine = "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
             writeFile file: 'anchore_images', text: imageLine
             anchore name: 'anchore_images'//, policyBundleId: 'anchore_skt_hcp_bmt'
         }
