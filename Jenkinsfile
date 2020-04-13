@@ -94,7 +94,7 @@ podTemplate(label:label,
         stage('ANCHORE EVALUATION') {
             def imageLine = "${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
             writeFile file: 'anchore_images', text: imageLine
-            anchore name: 'anchore_images'//, policyBundleId: 'anchore_skt_hcp_bmt'
+            anchore name: 'anchore_images', engineRetries: '3000'//, policyBundleId: 'anchore_skt_hcp_bmt'
         }
      
         stage('RETAG DOCKER IMAGE') {
