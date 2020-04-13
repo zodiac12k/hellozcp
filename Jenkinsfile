@@ -108,7 +108,7 @@ podTemplate(label:label,
                     sh "notary --help"
                     sh "notary -s http://harbor-harbor-notary-server.ns-repository:4443 publish ${HARBOR_REGISTRY}"
                     // https://github.com/containers/buildah/blob/master/docs/buildah-login.md
-                    sh "buildah login -u ${HARBOR_USERNAME} -p ${HARBOR_PASSWORD} --tls-verify=false ${HARBOR_REGISTRY}"
+                    sh "buildah login -u ${HARBOR_USERNAME} -p ${HARBOR_PASSWORD} --tls-verify=false ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
                     sh "buildah push --tls-verify=false ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
                 }
             }
