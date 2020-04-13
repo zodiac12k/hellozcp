@@ -57,27 +57,27 @@ podTemplate(label:label,
             //env.SCM_INFO = repo.inspect()
         }
  
-        stage('BUILD MAVEN') {
-            container('maven') {
-                mavenBuild goal: 'clean package', systemProperties:['maven.repo.local':"/root/.m2/${JOB_NAME}"]
-            }
-        }
+        //stage('BUILD MAVEN') {
+        //    container('maven') {
+        //        mavenBuild goal: 'clean package', systemProperties:['maven.repo.local':"/root/.m2/${JOB_NAME}"]
+        //    }
+        //}
         
-        stage('BUILD DOCKER IMAGE') {
-            container('buildah') {
-                sh "buildah version"
-                sh "buildah bud --format docker --tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ."
+        //stage('BUILD DOCKER IMAGE') {
+        //    container('buildah') {
+        //        sh "buildah version"
+        //        sh "buildah bud --format docker --tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ."
                 //dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                 //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
-            }
-        }
+        //    }
+        //}
  
         stage('PULL DEVELOP IMAGE') {
             withCredentials([usernamePassword(credentialsId: 'internal-registry-credentials', passwordVariable: 'INTERNAL_REGISTRY_PASSWORD', usernameVariable: 'INTERNAL_REGISTRY_USERNAME')]) {
                 container('buildah') {
-                    // https://github.com/containers/buildah/blob/master/docs/buildah-login.md
-                    sh "buildah login -u ${INTERNAL_REGISTRY_USERNAME} -p ${INTERNAL_REGISTRY_PASSWORD} --tls-verify=false ${INTERNAL_REGISTRY}"
-                    sh "buildah pull --tls-verify=false ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+                    // https://github.com/containers/buildah/blob/master/docs/buildah-pull.md
+                    // sh "buildah login -u ${INTERNAL_REGISTRY_USERNAME} -p ${INTERNAL_REGISTRY_PASSWORD} --tls-verify=false ${INTERNAL_REGISTRY}"
+                    sh "buildah pull -creds ${INTERNAL_REGISTRY_USERNAME}:${INTERNAL_REGISTRY_PASSWORD} --tls-verify=false ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                     //dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                     //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
                 }
@@ -89,6 +89,12 @@ podTemplate(label:label,
                 sh "cat /etc/containers/registries.conf"
                 sh "cat /etc/containers/policy.json"
             }
+        }
+     
+        stage('ANCHORE EVALUATION') {
+            def imageLine = "${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+            writeFile file: 'anchore_images', text: imageLine
+            anchore name: 'anchore_images'//, policyBundleId: 'anchore_skt_hcp_bmt'
         }
      
         stage('RETAG DOCKER IMAGE') {
@@ -108,17 +114,11 @@ podTemplate(label:label,
                     sh "sudo mv -Z notary /usr/bin/"
                     sh "notary --help"
                     //sh "notary -s http://harbor-harbor-notary-server.ns-repository:4443 publish ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
-                    // https://github.com/containers/buildah/blob/master/docs/buildah-login.md
-                    sh "buildah login -u ${HARBOR_USERNAME} -p ${HARBOR_PASSWORD} --tls-verify=false ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
-                    sh "buildah push --tls-verify=false ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
+                    // https://github.com/containers/buildah/blob/master/docs/buildah-push.md
+                    //sh "buildah login -u ${HARBOR_USERNAME} -p ${HARBOR_PASSWORD} --tls-verify=false ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
+                    sh "buildah push --creds ${HARBOR_USERNAME}:${HARBOR_PASSWORD} --tls-verify=false ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
                 }
             }
-        }
-     
-        stage('ANCHORE EVALUATION') {
-            def imageLine = "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
-            writeFile file: 'anchore_images', text: imageLine
-            anchore name: 'anchore_images'//, policyBundleId: 'anchore_skt_hcp_bmt'
         }
 
         stage('DEPLOY') {
