@@ -80,6 +80,9 @@ podTemplate(label:label,
                     sh "docker tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
                     sh "docker push ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
                     sh "docker logout ${HARBOR_REGISTRY}"
+                    sh "ls ~/.docker/"
+                    sh "ls ~/.docker/trust/private"
+                    sh "ls ~/.docker/trust/tuf"
                     //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: PROD_VERSION, credentialsId: "harbor-credentials"
                 }
             }
