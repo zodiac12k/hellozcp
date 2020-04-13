@@ -76,7 +76,6 @@ podTemplate(label:label,
             withCredentials([usernamePassword(credentialsId: 'internal-registry-credentials', passwordVariable: 'INTERNAL_REGISTRY_PASSWORD', usernameVariable: 'INTERNAL_REGISTRY_USERNAME')]) {
                 container('buildah') {
                     // https://github.com/containers/buildah/blob/master/docs/buildah-pull.md
-                    // sh "buildah login -u ${INTERNAL_REGISTRY_USERNAME} -p ${INTERNAL_REGISTRY_PASSWORD} --tls-verify=false ${INTERNAL_REGISTRY}"
                     sh "buildah pull --creds ${INTERNAL_REGISTRY_USERNAME}:${INTERNAL_REGISTRY_PASSWORD} --tls-verify=false ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                     //dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                     //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
@@ -115,7 +114,6 @@ podTemplate(label:label,
                     sh "notary --help"
                     //sh "notary -s http://harbor-harbor-notary-server.ns-repository:4443 publish ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
                     // https://github.com/containers/buildah/blob/master/docs/buildah-push.md
-                    //sh "buildah login -u ${HARBOR_USERNAME} -p ${HARBOR_PASSWORD} --tls-verify=false ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
                     sh "buildah push --creds ${HARBOR_USERNAME}:${HARBOR_PASSWORD} --tls-verify=false ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
                 }
             }
@@ -123,13 +121,17 @@ podTemplate(label:label,
 
         stage('DEPLOY') {
             container('kubectl') {
-                kubeCmd.apply file: 'k8s/service.yaml', namespace: K8S_NAMESPACE
-                yaml.update file: 'k8s/deploy.yaml', update: ['.spec.template.spec.containers[0].image': "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${VERSION}"]
-                def exists = kubeCmd.resourceExists file: 'k8s/deploy.yaml', namespace: K8S_NAMESPACE
-                if (exists) {
-                    kubeCmd.scale file: 'k8s/deploy.yaml', replicas: '0', namespace: K8S_NAMESPACE
+                cluster("skt-bmt/ns-swing,eks-bmt-1/ns-swing") {
+                    echo "Work in ${it.cluster}"
+                    sh "kubectl get po -n ${it.namespace}"
+                    kubeCmd.apply file: 'k8s/service.yaml', namespace: K8S_NAMESPACE
+                    yaml.update file: 'k8s/deploy.yaml', update: ['.spec.template.spec.containers[0].image': "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"]
+                    def exists = kubeCmd.resourceExists file: 'k8s/deploy.yaml', namespace: K8S_NAMESPACE
+                    if (exists) {
+                        kubeCmd.scale file: 'k8s/deploy.yaml', replicas: '0', namespace: K8S_NAMESPACE
+                    }
+                    kubeCmd.apply file: 'k8s/deploy.yaml', namespace: K8S_NAMESPACE, wait: 300
                 }
-                kubeCmd.apply file: 'k8s/deploy.yaml', namespace: K8S_NAMESPACE, wait: 300
             }
         }
     }
