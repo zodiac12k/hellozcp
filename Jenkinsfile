@@ -109,7 +109,7 @@ podTemplate(label:label,
                 container('docker') {
                     sh "docker login -u ${HARBOR_USERNAME} -p ${HARBOR_PASSWORD} ${HARBOR_REGISTRY}"
                     sh "export DOCKER_CONTENT_TRUST=1"
-                    sh "export DOCKER_CONTENT_TRUST_SERVER=https://harbor-harbor-notary-server.ns-repository:4443"
+                    sh "export DOCKER_CONTENT_TRUST_SERVER=${NOTARY_SERVER}"
                     sh "export DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE=${DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE}"
                     sh "export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE=${DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE}"
                     sh "docker push ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
