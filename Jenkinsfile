@@ -95,7 +95,7 @@ podTemplate(label:label,
                     sh "export DOCKER_CONTENT_TRUST=1"
                     sh "export DOCKER_CONTENT_TRUST_SERVER=https://harbor-harbor-notary-server.ns-repository:4443"
                     sh "docker login -u ${INTERNAL_REGISTRY_USERNAME} -p ${INTERNAL_REGISTRY_PASSWORD} ${INTERNAL_REGISTRY}"
-                    sh "docker pull ${INTERNAL_REGISTRY}"/${DOCKER_IMAGE}:${DEV_VERSION}
+                    sh "docker pull ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                     sh "docker tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
                     sh "docker images"
                     dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: PROD_VERSION, credentialsId: "harbor-credentials"
