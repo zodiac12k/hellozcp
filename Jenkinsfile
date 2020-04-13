@@ -89,17 +89,31 @@ podTemplate(label:label,
             }
         }
         
-        stage('SIGN AND PUSH IMAGE') {
+        stage('PULL IMAGE') {
             withCredentials([usernamePassword(credentialsId: 'internal-registry-credentials', passwordVariable: 'INTERNAL_REGISTRY_PASSWORD', usernameVariable: 'INTERNAL_REGISTRY_USERNAME')]) {
                 container('docker') {
                     sh "docker login -u ${INTERNAL_REGISTRY_USERNAME} -p ${INTERNAL_REGISTRY_PASSWORD} ${INTERNAL_REGISTRY}"
                     sh "docker pull ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
-                    sh "docker tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
+                }
+            }
+        }
+        
+        stage('RETAG IMAGE') {
+            container('docker') {
+                sh "docker tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
+            }
+        }
+        
+        stage('SIGN AND PUSH IMAGE') {
+            withCredentials([usernamePassword(credentialsId: 'harbor-credentials', passwordVariable: 'HARBOR_PASSWORD', usernameVariable: 'HARBOR_USERNAME')]) {
+                container('docker') {
+                    sh "docker login -u ${HARBOR_USERNAME} -p ${HARBOR_PASSWORD} ${HARBOR_REGISTRY}"
                     sh "export DOCKER_CONTENT_TRUST=1"
                     sh "export DOCKER_CONTENT_TRUST_SERVER=https://harbor-harbor-notary-server.ns-repository:4443"
                     sh "export DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE=${DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE}"
                     sh "export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE=${DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE}"
-                    dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: PROD_VERSION, credentialsId: "harbor-credentials"
+                    sh "docker push ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
+                    //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: PROD_VERSION, credentialsId: "harbor-credentials"
                 }
             }
         }
