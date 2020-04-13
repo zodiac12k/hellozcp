@@ -2,7 +2,6 @@
 def label = "jenkins-${UUID.randomUUID().toString()}"
  
 def USERID = 'admin'
-def INTERNAL_REGISTRY = 'default-route-openshift-image-registry.apps.hcp.skcloud.io'
 def DOCKER_IMAGE = 'bmt-workload/ghost'
 def K8S_NAMESPACE = 'earth1223'
 def DEV_VERSION = 'latest'
