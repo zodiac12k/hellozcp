@@ -73,18 +73,18 @@ podTemplate(label:label,
             withCredentials([usernamePassword(credentialsId: 'harbor-credentials', passwordVariable: 'HARBOR_PASSWORD', usernameVariable: 'HARBOR_USERNAME')]) {
                 container('docker') {
                     sh "docker login -u ${HARBOR_USERNAME} -p ${HARBOR_PASSWORD} ${HARBOR_REGISTRY}"
-                    sh "export DOCKER_CONTENT_TRUST=1"
-                    sh "export DOCKER_CONTENT_TRUST_SERVER=${NOTARY_SERVER}"
-                    sh "export DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE=${DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE}"
-                    sh "export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE=${DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE}"
-                    sh "docker trust key generate ${USERID}"
-                    sh "docker trust signer add --key ${USERID}.pub ${USERID} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}"
-                    sh "ls ~/.docker/"
-                    sh "ls ~/.docker/trust/private"
-                    sh "ls ~/.docker/trust/tuf"
-                    sh "docker tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
-                    sh "docker push ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
-                    sh "docker logout ${HARBOR_REGISTRY}"
+                    sh """export DOCKER_CONTENT_TRUST=1
+                          export DOCKER_CONTENT_TRUST_SERVER=${NOTARY_SERVER}
+                          export DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE=${DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE}
+                          export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE=${DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE}
+                          #docker trust key generate ${USERID}
+                          #docker trust signer add --key ${USERID}.pub ${USERID} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}
+                          docker tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}
+                          docker push ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}
+                          docker logout ${HARBOR_REGISTRY}
+                          ls ~/.docker/
+                          ls ~/.docker/trust/private
+                          ls ~/.docker/trust/tuf"""
                     //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: PROD_VERSION, credentialsId: "harbor-credentials"
                 }
             }
