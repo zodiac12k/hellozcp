@@ -12,13 +12,13 @@ podTemplate(label:label,
     containers: [
         containerTemplate(name: 'maven', image: 'maven:3.5.2-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
         containerTemplate(name: 'docker', image: 'earth1223/docker:19-dind', ttyEnabled: true, command: 'dockerd-entrypoint.sh', privileged: true, alwaysPullImage: true),
-        containerTemplate(name: 'buildah', image: 'quay.io/buildah/stable', ttyEnabled: true, command: 'cat', privileged: true),
+        //containerTemplate(name: 'buildah', image: 'quay.io/buildah/stable', ttyEnabled: true, command: 'cat', privileged: true),
         containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl', ttyEnabled: true, command: 'cat'),
         //containerTemplate(name: 'ubuntu', image: 'ubuntu', ttyEnabled: true, command: 'cat')
     ],
     volumes: [
         persistentVolumeClaim(mountPath: '/root/.m2', claimName: 'zcp-jenkins-mvn-repo'),
-        hostPathVolume(hostPath: '/var/lib/containers', mountPath: '/var/lib/containers')
+        //hostPathVolume(hostPath: '/var/lib/containers', mountPath: '/var/lib/containers')
     ]) {
  
     node(label) {
@@ -42,22 +42,22 @@ podTemplate(label:label,
         //    }
         //}
  
-        stage('PULL DEVELOP IMAGE') {
-            withCredentials([usernamePassword(credentialsId: 'internal-registry-credentials', passwordVariable: 'INTERNAL_REGISTRY_PASSWORD', usernameVariable: 'INTERNAL_REGISTRY_USERNAME')]) {
-                container('buildah') {
+        //stage('PULL DEVELOP IMAGE') {
+        //    withCredentials([usernamePassword(credentialsId: 'internal-registry-credentials', passwordVariable: 'INTERNAL_REGISTRY_PASSWORD', usernameVariable: 'INTERNAL_REGISTRY_USERNAME')]) {
+        //        container('buildah') {
                     // https://github.com/containers/buildah/blob/master/docs/buildah-pull.md
-                    sh "buildah pull --creds ${INTERNAL_REGISTRY_USERNAME}:${INTERNAL_REGISTRY_PASSWORD} --tls-verify=false ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
+        //            sh "buildah pull --creds ${INTERNAL_REGISTRY_USERNAME}:${INTERNAL_REGISTRY_PASSWORD} --tls-verify=false ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                     //dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                     //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: DEV_VERSION, credentialsId: "HARBOR_CREDENTIALS"
-                }
-            }
-        }
+        //        }
+        //    }
+        //}
      
-        stage('RETAG DOCKER IMAGE') {
-            container('buildah') {
-                sh "buildah tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
-            }
-        }
+        //stage('RETAG DOCKER IMAGE') {
+        //    container('buildah') {
+        //        sh "buildah tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
+        //    }
+        //}
         
         stage('PULL IMAGE') {
             withCredentials([usernamePassword(credentialsId: 'internal-registry-credentials', passwordVariable: 'INTERNAL_REGISTRY_PASSWORD', usernameVariable: 'INTERNAL_REGISTRY_USERNAME')]) {
@@ -65,6 +65,14 @@ podTemplate(label:label,
                     sh "docker login -u ${INTERNAL_REGISTRY_USERNAME} -p ${INTERNAL_REGISTRY_PASSWORD} ${INTERNAL_REGISTRY}"
                     sh "docker pull ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION}"
                     sh "docker logout ${INTERNAL_REGISTRY}"
+                }
+            }
+        }
+        
+        stage('RETAG IMAGE') {
+            withCredentials([usernamePassword(credentialsId: 'internal-registry-credentials', passwordVariable: 'INTERNAL_REGISTRY_PASSWORD', usernameVariable: 'INTERNAL_REGISTRY_USERNAME')]) {
+                container('docker') {
+                    sh "docker tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
                 }
             }
         }
@@ -79,12 +87,11 @@ podTemplate(label:label,
                           export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE=${DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE}
                           #docker trust key generate ${USERID}
                           #docker trust signer add --key ${USERID}.pub ${USERID} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}
-                          docker tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}
                           docker push ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}
                           docker logout ${HARBOR_REGISTRY}
-                          ls ~/.docker/
-                          ls ~/.docker/trust/private
-                          ls ~/.docker/trust/tuf"""
+                          #ls ~/.docker/
+                          #ls ~/.docker/trust/private
+                          #ls ~/.docker/trust/tuf"""
                     //dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: PROD_VERSION, credentialsId: "harbor-credentials"
                 }
             }
