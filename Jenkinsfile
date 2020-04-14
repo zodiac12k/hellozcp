@@ -2,7 +2,6 @@
 def label = "jenkins-${UUID.randomUUID().toString()}"
  
 def USERID = 'admin'
-def DOCKER_REPOSITORY = 'bmt-workload'
 def DOCKER_IMAGE = 'bmt-workload/ghost'
 def K8S_NAMESPACE = 'earth1223'
 def DEV_VERSION = 'latest'
@@ -79,7 +78,7 @@ podTemplate(label:label,
                     sh "export DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE=${DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE}"
                     sh "export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE=${DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE}"
                     sh "docker trust key generate ${USERID}"
-                    sh "docker trust signer add --key ${USERID}.pub ${USERID} ${HARBOR_REGISTRY}/${DOCKER_REPOSITORY}"
+                    sh "docker trust signer add --key ${USERID}.pub ${USERID} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}"
                     sh "docker tag ${INTERNAL_REGISTRY}/${DOCKER_IMAGE}:${DEV_VERSION} ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
                     sh "docker push ${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${PROD_VERSION}"
                     sh "docker logout ${HARBOR_REGISTRY}"
